@@ -1,0 +1,43 @@
+# Settings for how the pipeline finds and edits your Overleaf project.
+
+# The main .tex file in your Overleaf project (the one containing your Projects section).
+main_tex_file: "main.tex"
+
+# Two comment lines that must already exist in that file, wrapping your Projects section.
+# Add these once, directly in your existing Projects section in Overleaf, e.g.:
+#
+#   \section*{Projects}
+#   % AUTO-PROJECTS-START
+#   \textbf{My Existing Project} ...
+#   ...
+#   % AUTO-PROJECTS-END
+#
+# Everything between these two lines is what the pipeline reads (to learn your formatting
+# style and to see which projects are already synced) and what it appends new entries into.
+# It never touches anything outside these markers.
+start_marker: "% AUTO-PROJECTS-START"
+end_marker: "% AUTO-PROJECTS-END"
+
+# Which AI provider drafts the bullets/entries. Options: "anthropic", "openai", or "google".
+# Whichever you pick, set the matching API key as a GitHub secret:
+#   anthropic -> ANTHROPIC_API_KEY  (paid API, console.anthropic.com)
+#   openai    -> OPENAI_API_KEY     (paid API, platform.openai.com)
+#   google    -> GOOGLE_API_KEY     (has a genuinely free tier - aistudio.google.com/apikey,
+#                                     no credit card needed, Flash models only)
+# Model names churn constantly — check the provider's current pricing/model page and
+# put whatever's current here rather than trusting an old default.
+ai_provider: "google"
+ai_model: "gemini-3-flash"
+
+# --- Where to find your projects ---
+
+# Your GitHub username. The pipeline lists every public repo under this account and
+# syncs any that aren't already in your resume — you don't maintain a project list.
+github_username: "yourhandle"
+
+# Forks are excluded automatically (they're not your own project). This pipeline's own
+# repo is also excluded automatically, so it never tries to add itself as an entry.
+# List any other repo names here you don't want turned into resume entries
+# (dotfiles, course homework, private experiments, etc.) — just the repo name, not owner/name.
+exclude_repos:
+  - "example-repo-to-skip"

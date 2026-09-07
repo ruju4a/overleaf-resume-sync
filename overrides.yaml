@@ -1,0 +1,14 @@
+# Optional. Leave this empty unless a specific repo needs manual bullets instead of
+# AI-drafted ones (e.g. a competition result that isn't written in the repo's README).
+#
+# Example:
+#
+# overrides:
+#   iam-project:
+#     bullets:
+#       - "Placed 2nd out of 300+ teams designing a secure identity and access management system."
+#       - "Implemented role-based access control and authentication flows under competitive time constraints."
+#
+# Key is just the repo name (not owner/name). Every other repo on your GitHub gets
+# AI-drafted bullets automatically from its README — you only need an entry here to override that.
+overrides: {}
