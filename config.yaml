@@ -24,10 +24,12 @@ end_marker: "% AUTO-PROJECTS-END"
 #   openai    -> OPENAI_API_KEY     (paid API, platform.openai.com)
 #   google    -> GOOGLE_API_KEY     (has a genuinely free tier - aistudio.google.com/apikey,
 #                                     no credit card needed, Flash models only)
-# Model names churn constantly — check the provider's current pricing/model page and
-# put whatever's current here rather than trusting an old default.
+# Model names churn constantly and a wrong one fails with a 404, not a helpful error.
+# To check what's actually available to YOUR key right now, run:
+#   curl -s -H "x-goog-api-key: $GOOGLE_API_KEY" https://generativelanguage.googleapis.com/v1beta/models | grep '"name"'
+# (swap the URL/header for Anthropic's or OpenAI's own model-list endpoint if using those instead)
 ai_provider: "google"
-ai_model: "gemini-3-flash"
+ai_model: "gemini-3.5-flash"
 
 # --- Where to find your projects ---
 
