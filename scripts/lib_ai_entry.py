@@ -107,10 +107,18 @@ def _draft_via_google(prompt: str, model: str) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     response = requests.post(
         url,
-        params={"key": api_key},
+        headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
         json={"contents": [{"parts": [{"text": prompt}]}]},
         timeout=60,
     )
+    if response.status_code == 404:
+        raise RuntimeError(
+            f"Model '{model}' not found by the Gemini API. Model names change often — "
+            f"run `curl -s -H \"x-goog-api-key: $GOOGLE_API_KEY\" "
+            f"https://generativelanguage.googleapis.com/v1beta/models | grep '\"name\"'` "
+            f"to see what's actually available to your key right now, and update ai_model "
+            f"in config.yaml to match."
+        )
     response.raise_for_status()
     data = response.json()
     return data["candidates"][0]["content"]["parts"][0]["text"]
