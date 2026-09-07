@@ -131,6 +131,25 @@ _PROVIDERS = {
 }
 
 
+def _call_with_retries(fn, prompt: str, model: str, attempts: int = 4):
+    """Retries transient failures (503s, rate limits, network blips) with backoff.
+    Doesn't special-case error types - a bad API key will also retry, but only wastes
+    a few seconds before failing with the real error, which is fine for a once-a-day run."""
+    import time
+
+    last_error = None
+    for attempt in range(attempts):
+        try:
+            return fn(prompt, model)
+        except Exception as e:
+            last_error = e
+            if attempt < attempts - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                print(f"    API call failed ({e}), retrying in {wait}s...")
+                time.sleep(wait)
+    raise last_error
+
+
 def draft_latex_entry(
     repo_info: dict,
     style_block: str,
@@ -144,5 +163,5 @@ def draft_latex_entry(
         )
 
     prompt = _build_prompt(repo_info, style_block, override_bullets)
-    text = _PROVIDERS[provider](prompt, model)
+    text = _call_with_retries(_PROVIDERS[provider], prompt, model)
     return text.strip()
