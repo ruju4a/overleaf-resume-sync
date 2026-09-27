@@ -35,7 +35,7 @@ ai_model: "gemini-3.5-flash"
 
 # Your GitHub username. The pipeline lists every public repo under this account and
 # syncs any that aren't already in your resume — you don't maintain a project list.
-github_username: "yourhandle"
+github_username: "ruju4a"
 
 # Forks are excluded automatically (they're not your own project). This pipeline's own
 # repo is also excluded automatically, so it never tries to add itself as an entry.
