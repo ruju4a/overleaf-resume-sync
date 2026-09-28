@@ -127,13 +127,26 @@ def insert_entries(block: str, new_entries: list, list_end_macro: str | None) ->
     return block.rstrip() + "\n\n" + addition + "\n"
 
 
+def normalize_block(block: str, list_end_macro: str | None) -> str:
+    """Self-heals placement: if the list-closing macro (e.g. \\resumeSubHeadingListEnd) has
+    entries after it, those entries are outside the list wrapper and cause 'Lonely \\item'
+    errors. Moves the macro to the very end of the block so everything is inside the wrapper."""
+    if not list_end_macro or list_end_macro not in block:
+        return block
+    stripped = block.replace(list_end_macro, "")
+    # Collapse the blank-line gaps left behind by the removal
+    stripped = re.sub(r"\n{3,}", "\n\n", stripped).rstrip()
+    return stripped + "\n\n" + list_end_macro + "\n"
+
+
 def main():
     config, overrides = load_config()
     main_tex_file = config["main_tex_file"]
     start_marker = config["start_marker"]
     end_marker = config["end_marker"]
     ai_provider = config.get("ai_provider", "google")
-    ai_model = config.get("ai_model", "gemini-3-flash")
+    ai_model = config.get("ai_model", "gemini-3.5-flash")
+    list_end_macro = config.get("list_end_macro") or None
 
     print("Cloning Overleaf project...")
     clone_overleaf_project()
@@ -142,12 +155,15 @@ def main():
     before, block, after = extract_marked_block(content, start_marker, end_marker)
     synced = already_synced_repos(block)
 
+    # Repair entries that ended up outside the list wrapper on earlier runs
+    fixed_block = normalize_block(block, list_end_macro)
+    repaired = fixed_block.strip() != block.strip()
+    if repaired:
+        print("Repaired placement: moved the list-closing macro so all entries sit inside it.")
+    block = fixed_block
+
     print(f"Listing public repos for {config['github_username']}...")
     new_repos = discover_new_repos(config, synced)
-
-    if not new_repos:
-        print("No new repos to sync.")
-        return
 
     new_entries = []
     for repo in new_repos:
@@ -167,19 +183,27 @@ def main():
         )
         new_entries.append(entry)
 
-    updated_block = insert_entries(block, new_entries, config.get("list_end_macro"))
-    updated_content = before + updated_block + after
+    if new_entries:
+        block = insert_entries(block, new_entries, list_end_macro)
 
-    (CLONE_DIR / main_tex_file).write_text(updated_content)
+    if not new_entries and not repaired:
+        print("No new repos to sync and nothing to repair.")
+        return
 
-    print(f"Added {len(new_entries)} new entr{'y' if len(new_entries) == 1 else 'ies'}. Pushing to Overleaf...")
+    (CLONE_DIR / main_tex_file).write_text(before + block + after)
+
+    msg = []
+    if new_entries:
+        msg.append(f"add {len(new_entries)} project entr{'y' if len(new_entries) == 1 else 'ies'}")
+    if repaired:
+        msg.append("fix entry placement")
+    commit_msg = "Auto: " + " + ".join(msg)
+
+    print(f"{commit_msg}. Pushing to Overleaf...")
     subprocess.run(["git", "config", "user.name", "resume-bot"], cwd=CLONE_DIR, check=True)
     subprocess.run(["git", "config", "user.email", "actions@github.com"], cwd=CLONE_DIR, check=True)
     subprocess.run(["git", "add", main_tex_file], cwd=CLONE_DIR, check=True)
-    subprocess.run(
-        ["git", "commit", "-m", f"Auto-add {len(new_entries)} project entr{'y' if len(new_entries)==1 else 'ies'}"],
-        cwd=CLONE_DIR, check=True,
-    )
+    subprocess.run(["git", "commit", "-m", commit_msg], cwd=CLONE_DIR, check=True)
     subprocess.run(["git", "push"], cwd=CLONE_DIR, check=True)
     print("Done.")
 
