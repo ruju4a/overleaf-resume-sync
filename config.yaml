@@ -43,3 +43,8 @@ github_username: "ruju4a"
 # (dotfiles, course homework, private experiments, etc.) — just the repo name, not owner/name.
 exclude_repos:
   - "example-repo-to-skip"
+
+# The macro that closes the list wrapping your project entries. If your Projects section
+# ends with it (inside the markers), new entries are inserted BEFORE it so they stay inside
+# the wrapper. Leave as "" if your entries aren't wrapped in a closing macro.
+list_end_macro: "\\resumeSubHeadingListEnd"
