@@ -89,17 +89,42 @@ def discover_new_repos(config: dict, synced: set) -> list[str]:
     self_repo = this_pipeline_repo()
 
     all_repos = list_public_repos(username)
+    print(f"  Found {len(all_repos)} public, non-fork repo(s) for {username}:")
+
     new_repos = []
     for repo in all_repos:
         name = repo.split("/", 1)[1]
         if repo in synced:
-            continue
-        if name in exclude_names:
-            continue
-        if self_repo and repo.lower() == self_repo.lower():
-            continue
-        new_repos.append(repo)
+            print(f"    - {repo}: already synced, skipping")
+        elif name in exclude_names:
+            print(f"    - {repo}: in exclude_repos, skipping")
+        elif self_repo and repo.lower() == self_repo.lower():
+            print(f"    - {repo}: this is the pipeline's own repo, skipping")
+        else:
+            print(f"    - {repo}: NEW")
+            new_repos.append(repo)
+
+    if not all_repos:
+        print(
+            "  (No public repos found at all for this username. If you expected some, check: "
+            "1) the username spelling in config.yaml matches your GitHub handle exactly, "
+            "2) the repo(s) are set to Public, not Private, in each repo's Settings.)"
+        )
     return new_repos
+
+
+def insert_entries(block: str, new_entries: list, list_end_macro: str | None) -> str:
+    """Inserts new entries into the block. If list_end_macro (e.g. \\resumeSubHeadingListEnd)
+    is set and found in the block, entries go BEFORE its last occurrence so they stay inside
+    the list wrapper. Otherwise they're appended at the end of the block."""
+    addition = "\n\n".join(new_entries)
+    if list_end_macro:
+        idx = block.rfind(list_end_macro)
+        if idx != -1:
+            head = block[:idx].rstrip()
+            tail = block[idx:]
+            return head + "\n\n" + addition + "\n\n" + tail
+    return block.rstrip() + "\n\n" + addition + "\n"
 
 
 def main():
@@ -142,7 +167,7 @@ def main():
         )
         new_entries.append(entry)
 
-    updated_block = block.rstrip() + "\n\n" + "\n\n".join(new_entries) + "\n"
+    updated_block = insert_entries(block, new_entries, config.get("list_end_macro"))
     updated_content = before + updated_block + after
 
     (CLONE_DIR / main_tex_file).write_text(updated_content)
