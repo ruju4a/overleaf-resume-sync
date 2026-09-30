@@ -11,4 +11,10 @@
 #
 # Key is just the repo name (not owner/name). Every other repo on your GitHub gets
 # AI-drafted bullets automatically from its README — you only need an entry here to override that.
-overrides: {}
+overrides:
+  reimplementation-back-end:
+    bullets:
+      - "Contributed PR #341 to the expertiza/reimplementation-back-end Rails project, implementing a calibration review feature."
+    # Fill in a second bullet with whatever else is true about your contribution -
+    # AI-drafting from the whole repo's README would describe the entire project as if
+    # you built it, which overclaims for a contribution to someone else's codebase.
