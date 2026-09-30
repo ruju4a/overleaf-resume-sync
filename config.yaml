@@ -35,7 +35,7 @@ ai_model: "gemini-3.5-flash"
 
 # Your GitHub username. The pipeline lists every public repo under this account and
 # syncs any that aren't already in your resume — you don't maintain a project list.
-github_username: "ruju4a"
+github_username: "yourhandle"
 
 # Forks are excluded automatically (they're not your own project). This pipeline's own
 # repo is also excluded automatically, so it never tries to add itself as an entry.
@@ -48,3 +48,10 @@ exclude_repos:
 # ends with it (inside the markers), new entries are inserted BEFORE it so they stay inside
 # the wrapper. Leave as "" if your entries aren't wrapped in a closing macro.
 list_end_macro: "\\resumeSubHeadingListEnd"
+
+# Repos you don't own but still want in your resume - e.g. a PR/contribution to someone
+# else's open-source project. These can never be auto-discovered from your own account,
+# so list them explicitly here as "owner/repo". Still gets AI-drafted or overridden bullets
+# and still deduplicates the same way as owned repos once synced.
+additional_repos:
+  - "expertiza/reimplementation-back-end"
