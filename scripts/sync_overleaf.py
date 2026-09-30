@@ -88,8 +88,16 @@ def discover_new_repos(config: dict, synced: set) -> list[str]:
     exclude_names = set(config.get("exclude_repos", []) or [])
     self_repo = this_pipeline_repo()
 
-    all_repos = list_public_repos(username)
-    print(f"  Found {len(all_repos)} public, non-fork repo(s) for {username}:")
+    # Owned repos, found automatically
+    owned_repos = list_public_repos(username)
+    # Repos you don't own but still want included - e.g. a PR/contribution to someone
+    # else's project. These can never be auto-discovered (ownership listing won't show
+    # them), so they're the one thing you still add explicitly, in config.yaml.
+    additional = config.get("additional_repos", []) or []
+
+    all_repos = owned_repos + [r for r in additional if r not in owned_repos]
+    print(f"  Found {len(owned_repos)} public, non-fork repo(s) owned by {username}"
+          f"{f' + {len(additional)} additional_repos entr' + ('y' if len(additional)==1 else 'ies') if additional else ''}:")
 
     new_repos = []
     for repo in all_repos:
